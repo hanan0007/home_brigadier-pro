@@ -1,6 +1,10 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:marquee/marquee.dart';
+
 import 'package:home_brigadier_admin_panel/app/widgets/c_button.dart';
 import 'package:home_brigadier_admin_panel/app/widgets/c_text_feild.dart';
 import 'package:home_brigadier_admin_panel/consts/media_query.dart';
@@ -9,8 +13,8 @@ import 'package:home_brigadier_admin_panel/models/expenses_models/expense_respon
 import 'package:home_brigadier_admin_panel/theme/app_text_style.dart';
 
 import '../../../../../consts/color_const/app_colors.dart';
+import '../../../../../utils/validation.dart';
 import '../controllers/expense_controller.dart';
-import 'package:marquee/marquee.dart';
 
 class ProfileView extends GetView<ExpenseController> {
   const ProfileView({super.key});
@@ -211,12 +215,17 @@ class ProfileView extends GetView<ExpenseController> {
                             fontSize: AppTextStyle.titleSmallFont,
                             fontWeight: FontWeight.bold),
                       ),
-                      Obx(
-                        () => Text(
-                          controller.totalepense.value.toString(),
-                          style: const TextStyle(
-                            color: AppColor.appPrimary,
-                            fontSize: AppTextStyle.titleMediumFont,
+                      SizedBox(
+                        width: 150,
+                        child: Obx(
+                          () => Text(
+                            maxLines: 1,
+                            controller.totalepense.value.toString(),
+                            style: const TextStyle(
+                              overflow: TextOverflow.ellipsis,
+                              color: AppColor.appPrimary,
+                              fontSize: AppTextStyle.titleMediumFont,
+                            ),
                           ),
                         ),
                       ),
@@ -251,8 +260,8 @@ class ProfileView extends GetView<ExpenseController> {
                           child: CircularProgressIndicator(),
                         );
                       } else if (snapshot.hasError) {
-                        return const Center(
-                          child: Text('No Expense'),
+                        return Center(
+                          child: Text('No Expense${snapshot.error}'),
                         );
                       } else if (snapshot.hasData) {
                         return ListView.builder(
@@ -403,7 +412,10 @@ class ProfileView extends GetView<ExpenseController> {
     );
   }
 
-  void showCustomDialog(BuildContext context, ExpenseController controller) {
+  void showCustomDialog(
+    BuildContext context,
+    ExpenseController controller,
+  ) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -412,150 +424,188 @@ class ProfileView extends GetView<ExpenseController> {
           return Dialog(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: appColorScheme.onSecondary,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                height: height * 0.8,
-                width: width,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: height * 0.03,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Add Expenses",
-                              style: TextStyle(
-                                  fontSize: AppTextStyle.titleMediumFont,
-                                  fontWeight: FontWeight.w900),
+              child: Form(
+                key: controller.formKey,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: appColorScheme.onSecondary,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  height: height * 0.8,
+                  width: width,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            height: height * 0.03,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Add Expenses",
+                                style: TextStyle(
+                                    fontSize: AppTextStyle.titleMediumFont,
+                                    fontWeight: FontWeight.w900),
+                              ),
+                              Icon(
+                                Icons.cancel,
+                                color: appColorScheme.secondary,
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            height: height * 0.03,
+                          ),
+                          const Divider(),
+                          SizedBox(
+                            height: height * 0.02,
+                          ),
+                          const Text(
+                            "Date",
+                            style: TextStyle(
+                              fontSize: AppTextStyle.titleSmallFont,
                             ),
-                            Icon(
-                              Icons.cancel,
-                              color: appColorScheme.secondary,
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          height: height * 0.03,
-                        ),
-                        const Divider(),
-                        SizedBox(
-                          height: height * 0.02,
-                        ),
-                        const Text(
-                          "Date",
-                          style: TextStyle(
-                            fontSize: AppTextStyle.titleSmallFont,
                           ),
-                        ),
-                        CTextField(
-                          onTap: () {
-                            selectDate(context);
-                          },
-                          prefexIcon: Icons.calendar_month,
-                          hint:
-                              '${controller.selectedDate.day.toString().padLeft(2, '0')}-${controller.selectedDate.month.toString().padLeft(2, '0')}-${controller.selectedDate.year}',
-                          controller: controller.dateController,
-                          borderColor: Colors.grey,
-                          borderRadius: 12,
-                          readOnly: true,
-                        ),
-                        SizedBox(
-                          height: height * 0.01,
-                        ),
-                        const Text(
-                          "Expense Type",
-                          style: TextStyle(
-                            fontSize: AppTextStyle.titleSmallFont,
+                          Obx(
+                            () => CTextField(
+                              onTap: () {
+                                selectDate(context);
+                              },
+                              prefexIcon: Icons.calendar_month,
+                              hint:
+                                  '${controller.selectedDate.value.day.toString().padLeft(2, '0')}-${controller.selectedDate.value.month.toString().padLeft(2, '0')}-${controller.selectedDate.value.year}',
+                              controller: controller.dateController,
+                              borderColor: Colors.grey,
+                              borderRadius: 5,
+                              readOnly: true,
+                            ),
                           ),
-                        ),
-                        const DropdownExample(),
-                        SizedBox(
-                          height: height * 0.01,
-                        ),
-                        const Text(
-                          "Amount",
-                          style: TextStyle(
-                            fontSize: AppTextStyle.titleSmallFont,
+                          SizedBox(
+                            height: height * 0.01,
                           ),
-                        ),
-                        CTextField(
-                            hint: 'Enter Amount',
-                            controller: controller.amountController,
-                            borderColor: Colors.grey,
-                            borderRadius: 12),
-                        SizedBox(
-                          height: height * 0.01,
-                        ),
-                        const Text(
-                          "Paid By",
-                          style: TextStyle(
-                            fontSize: AppTextStyle.titleSmallFont,
+                          const Text(
+                            "Expense Type",
+                            style: TextStyle(
+                              fontSize: AppTextStyle.titleSmallFont,
+                            ),
                           ),
-                        ),
-                        CTextField(
-                            hint: 'Enter Paid By',
-                            controller: controller.paidbyController,
-                            borderColor: Colors.grey,
-                            borderRadius: 12),
-                        SizedBox(
-                          height: height * 0.01,
-                        ),
-                        const Text(
-                          "Recipent ID",
-                          style: TextStyle(
-                            fontSize: AppTextStyle.titleSmallFont,
+                          DropdownExample(
+                            controller: controller,
                           ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            controller.pickImage();
-                          },
-                          child: Container(
-                              height: height * 0.055,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey)),
-                              width: mediaQueryWidth(context),
-                              child: Center(
-                                  child:
-                                      Text(controller.imageName.toString()))),
-                        ),
-                        SizedBox(
-                          height: height * 0.01,
-                        ),
-                        const Text(
-                          "Paid Via",
-                          style: TextStyle(
-                            fontSize: AppTextStyle.titleSmallFont,
+                          SizedBox(
+                            height: height * 0.01,
                           ),
-                        ),
-                        CTextField(
-                            hint: 'Enter Paid Via',
-                            controller: controller.paidviaController,
-                            borderColor: Colors.grey,
-                            borderRadius: 12),
-                        SizedBox(
-                          height: height * 0.02,
-                        ),
-                        CButton(
-                          btnwidth: 100,
-                          btnheight: 40,
-                          text: "Submit",
-                          ontab: () {},
-                        ),
-                        SizedBox(
-                          height: height * 0.02,
-                        )
-                      ],
+                          const Text(
+                            "Amount",
+                            style: TextStyle(
+                              fontSize: AppTextStyle.titleSmallFont,
+                            ),
+                          ),
+                          CTextField(
+                              keyboardType: TextInputType.number,
+                              hint: 'Enter Amount',
+                              controller: controller.amountController,
+                              borderColor: Colors.grey,
+                              validator: (p0) {
+                                return GetValidation.validate(
+                                    controller.amountController.text, "Amount");
+                              },
+                              borderRadius: 5),
+                          SizedBox(
+                            height: height * 0.01,
+                          ),
+                          const Text(
+                            "Paid By",
+                            style: TextStyle(
+                              fontSize: AppTextStyle.titleSmallFont,
+                            ),
+                          ),
+                          CTextField(
+                              hint: 'Enter Paid By',
+                              controller: controller.paidbyController,
+                              borderColor: Colors.grey,
+                              validator: (p0) {
+                                return GetValidation.validate(
+                                    controller.paidbyController.text,
+                                    "Paid by");
+                              },
+                              borderRadius: 5),
+                          SizedBox(
+                            height: height * 0.01,
+                          ),
+                          const Text(
+                            "Recipent ID",
+                            style: TextStyle(
+                              fontSize: AppTextStyle.titleSmallFont,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              controller.pickImage();
+                            },
+                            child: Container(
+                                height: height * 0.055,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    border: Border.all(color: Colors.grey)),
+                                width: mediaQueryWidth(context),
+                                child: Center(
+                                    child: Obx(() => Text(
+                                        controller.imageName.toString())))),
+                          ),
+                          SizedBox(
+                            height: height * 0.01,
+                          ),
+                          const Text(
+                            "Paid Via",
+                            style: TextStyle(
+                              fontSize: AppTextStyle.titleSmallFont,
+                            ),
+                          ),
+                          CTextField(
+                              hint: 'Enter Paid Via',
+                              controller: controller.paidviaController,
+                              borderColor: Colors.grey,
+                              validator: (p0) {
+                                return GetValidation.validate(
+                                    controller.paidviaController.text,
+                                    "Paid via");
+                              },
+                              borderRadius: 5),
+                          SizedBox(
+                            height: height * 0.02,
+                          ),
+                          CButton(
+                            btnwidth: 100,
+                            btnheight: 40,
+                            text: "Submit",
+                            ontab: () {
+                              if (controller.formKey.currentState!.validate()) {
+                                print('everything is ok');
+                                controller.addexpense();
+                              }
+                              // if (controller.amountController.text.isEmpty &&
+                              //     controller.paidbyController.text.isEmpty &&
+                              //     controller.paidviaController.text.isEmpty &&
+                              //     controller.remarksController.text.isEmpty &&
+                              //     controller.type.value ==
+                              //         'Select Expense Type') {
+                              //   print('errrrrrrrrrrrrrrrror');
+                              // } else {
+                              //   controller.addexpense();
+                              // }
+                              // controller.addexpense();
+                            },
+                          ),
+                          SizedBox(
+                            height: height * 0.02,
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -566,7 +616,7 @@ class ProfileView extends GetView<ExpenseController> {
   selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: controller.selectedDate, // Refer step 1
+      initialDate: controller.selectedDate.value, // Refer step 1
       firstDate: DateTime(2000),
       lastDate: DateTime(2025),
     );
@@ -577,7 +627,12 @@ class ProfileView extends GetView<ExpenseController> {
 }
 
 class DropdownExample extends StatefulWidget {
-  const DropdownExample({super.key});
+  final ExpenseController? controller;
+
+  DropdownExample({
+    Key? key,
+    this.controller,
+  }) : super(key: key);
 
   @override
   _DropdownExampleState createState() => _DropdownExampleState();
@@ -588,45 +643,49 @@ class _DropdownExampleState extends State<DropdownExample> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey)),
-      width: mediaQueryWidth(context),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          DropdownButton<String>(
-            underline: const SizedBox(),
-            style: const TextStyle(
-              fontSize: AppTextStyle.titleSmallFont,
-            ),
-            dropdownColor: appColorScheme.onSecondary,
-            value: selectedValue,
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedValue = newValue!;
-              });
-            },
-            items: <String>[
-              'Select Expense Type',
-              'Fuel',
-              'Sallery',
-              'Internet',
-              'Vehicle Maintenance',
-              'Others'
-            ].map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(
-                  value,
-                  style: const TextStyle(color: Colors.black),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+    return DropdownButtonFormField<String>(
+      validator: (value) {
+        if (value == null || value == 'Select Expense Type') {
+          return 'Please select an expense type';
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        fillColor: Colors.white, // Set background color to white
       ),
+      style: const TextStyle(
+        fontSize: 16, // Use your desired font size
+      ),
+      dropdownColor: Colors.white, // Set dropdown menu color to white
+      value: selectedValue,
+      onChanged: (String? newValue) {
+        setState(() {
+          selectedValue = newValue!;
+          if (widget.controller != null) {
+            widget.controller!.type.value = newValue;
+          }
+        });
+      },
+      items: <String>[
+        'Select Expense Type',
+        'FUEL',
+        'SALARY',
+        'INTERNET',
+        'VEHICLE_MAINTENANCE',
+        'OTHER'
+      ].map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(
+            value,
+            style: const TextStyle(color: Colors.black),
+          ),
+        );
+      }).toList(),
     );
   }
 }

@@ -24,4 +24,11 @@ class GetValidation {
 
     return null;
   }
+
+  static String? validateDropdown(String? value) {
+    if (value == null || value == 'Select Expense Type') {
+      return 'Please select an expense type';
+    }
+    return null;
+  }
 }

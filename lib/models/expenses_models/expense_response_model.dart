@@ -68,7 +68,7 @@ class Original {
   String? date;
   String? paidBy;
   String? paidVia;
-  int? amount;
+  num? amount;
   String? role;
   String? createdAt;
   String? updatedAt;
@@ -151,7 +151,7 @@ class Reciept {
 
 class Total {
   Null nId;
-  int? totalExpenses;
+  num? totalExpenses;
 
   Total({this.nId, this.totalExpenses});
 
