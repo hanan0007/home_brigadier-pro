@@ -124,17 +124,15 @@ class ExpenseController extends GetxController {
             0,
             0,
             0)),
-        paidBy: paidbyController.text,
-        paidVia: paidviaController.text,
+        paidBy: paidbyController.text.toLowerCase(),
+        paidVia: paidviaController.text.toLowerCase(),
         receiptId: "",
-        remarks: remarksController.text,
-        type: type.value);
+        remarks: remarksController.text.toLowerCase(),
+        type: type.value.toUpperCase());
 
-    print(
-        "Model${model.amount},${model.date},${model.paidBy},${model.paidVia},${model.receiptId},${model.remarks}${model.type}");
     try {
       var response =
-          await apiHelper.post(endpoint: 'addExpense/', data: model.toJson());
+          await apiHelper.post(endpoint: 'addExpense', data: model.toJson());
 
       if (response.statusCode == 200) {
         print(response.data);

@@ -538,6 +538,25 @@ class ProfileView extends GetView<ExpenseController> {
                             height: height * 0.01,
                           ),
                           const Text(
+                            "Remarks",
+                            style: TextStyle(
+                              fontSize: AppTextStyle.titleSmallFont,
+                            ),
+                          ),
+                          CTextField(
+                              hint: 'Enter remarks',
+                              controller: controller.remarksController,
+                              borderColor: Colors.grey,
+                              validator: (p0) {
+                                return GetValidation.validate(
+                                    controller.paidbyController.text,
+                                    "Paid by");
+                              },
+                              borderRadius: 5),
+                          SizedBox(
+                            height: height * 0.01,
+                          ),
+                          const Text(
                             "Recipent ID",
                             style: TextStyle(
                               fontSize: AppTextStyle.titleSmallFont,
@@ -585,7 +604,6 @@ class ProfileView extends GetView<ExpenseController> {
                             text: "Submit",
                             ontab: () {
                               if (controller.formKey.currentState!.validate()) {
-                                print('everything is ok');
                                 controller.addexpense();
                               }
                               // if (controller.amountController.text.isEmpty &&
