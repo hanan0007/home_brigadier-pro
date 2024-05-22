@@ -39,7 +39,7 @@ class CalenderData {
   num? hours;
   String? startTime;
   String? endTime;
-  int? ratePerHour;
+  num? ratePerHour;
   bool? material;
   String? description;
   String? flag;

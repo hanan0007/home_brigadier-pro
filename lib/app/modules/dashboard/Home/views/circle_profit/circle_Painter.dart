@@ -12,7 +12,7 @@ class OpenPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     double strokeWidth = 7;
-    Rect myRect = const Offset(-50.0, -50.0) & const Size(100.0, 100.0);
+    Rect myRect = const Offset(-100.0, -100.0) & const Size(200.0, 200.0);
 
     var paint1 = Paint()
       ..color = Colors.red

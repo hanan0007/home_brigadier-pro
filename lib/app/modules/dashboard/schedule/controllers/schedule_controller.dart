@@ -13,7 +13,6 @@ import 'package:home_brigadier_admin_panel/models/schedule_res_model.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-
 // import '../../../../../models/expenses_models/expenses_req_model.dart';
 
 class ScheduleController extends GetxController {
@@ -109,6 +108,7 @@ class ScheduleController extends GetxController {
   //     }
   //   }
   // }
+  // add schedule
 
   // ====== Claender Schedule ====
   List<CalenderData>? dataList;
@@ -205,8 +205,6 @@ class ScheduleController extends GetxController {
   }
 
   final count = 0.obs;
-
-
 
   void increment() => count.value++;
 }

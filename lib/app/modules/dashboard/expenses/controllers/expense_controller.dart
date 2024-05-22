@@ -1,8 +1,13 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/get_rx.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
+import 'package:get/state_manager.dart';
+import 'package:home_brigadier_admin_panel/models/expenses_models/add_expense_model.dart';
 import 'package:home_brigadier_admin_panel/models/expenses_models/expense_response_model.dart';
 import 'package:home_brigadier_admin_panel/models/expenses_models/expenses_req_model.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,12 +28,13 @@ class ExpenseController extends GetxController {
   TextEditingController searchController = TextEditingController();
   ApiHelper apiHelper = ApiHelper();
   final count = 0.obs;
-  DateTime selectedDate = DateTime.now();
+  var selectedDate = DateTime.now().obs;
   DateTime fromDate = DateTime.now();
   DateTime toDate = DateTime.now();
+  RxString type = 'Select Expense Type'.obs;
+  final formKey = GlobalKey<FormState>();
   update_From(DateTime date) {
     fromDate = date;
-
     update();
   }
 
@@ -38,7 +44,7 @@ class ExpenseController extends GetxController {
   }
 
   updateDate(DateTime date) {
-    selectedDate = date;
+    selectedDate.value = date;
     update();
   }
 
@@ -48,19 +54,19 @@ class ExpenseController extends GetxController {
   }
 
   File? image;
-  String imageName = 'Select Recipent ID';
+  RxString imageName = 'Select Recipent ID'.obs;
   final ImagePicker picker = ImagePicker();
   Future<void> pickImage() async {
     final XFile? pickedFile =
         await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       image = File(pickedFile.path);
-      imageName = path.basename(pickedFile.path);
+      imageName.value = path.basename(pickedFile.path);
       update(); // Extract file name
     }
   }
 
-  RxInt totalepense = 0.obs;
+  RxString totalepense = '0'.obs;
   List<Total>? totalexpense;
   List<Original>? originaldetail;
   getexpenses() async {
@@ -72,10 +78,12 @@ class ExpenseController extends GetxController {
         order: [],
         start: 0,
         search: null,
-        startDate: DateFormat("yyyy-MM-dd'T'HH:mm:ss'-0700'").format(
+        startDate: DateFormat("yyyy-MM-dd'T'HH:mm:ss'+0400'").format(
             DateTime(fromDate.year, fromDate.month, fromDate.day, 0, 0, 0)),
-        endDate: DateFormat("yyyy-MM-dd'T'HH:mm:ss'-0700'").format(
+        endDate: DateFormat("yyyy-MM-dd'T'HH:mm:ss'+0400'").format(
             DateTime(toDate.year, toDate.month, toDate.day, 23, 59, 59)));
+    print(model.startDate);
+    print(model.endDate);
     try {
       var response =
           await apiHelper.post(endpoint: '/getExpenses', data: model.toJson());
@@ -87,9 +95,10 @@ class ExpenseController extends GetxController {
         if (result.data!.original!.isNotEmpty) {
           totalexpense = result.data!.total;
           originaldetail = result.data!.original;
-          totalepense.value = result.data!.total!.first.totalExpenses!.toInt();
+          totalepense.value =
+              result.data!.total!.first.totalExpenses!.toString();
         } else {
-          totalepense.value = 0;
+          totalepense = "0".obs;
           totalexpense!.clear();
           originaldetail!.clear();
         }
@@ -105,8 +114,40 @@ class ExpenseController extends GetxController {
     }
   }
 
+  addexpense() async {
+    AddExpenseModel model = AddExpenseModel(
+        amount: int.parse(amountController.text),
+        date: DateFormat("yyyy-MM-dd'T'HH:mm:ss'-0700'").format(DateTime(
+            selectedDate.value.year,
+            selectedDate.value.month,
+            selectedDate.value.day,
+            0,
+            0,
+            0)),
+        paidBy: paidbyController.text,
+        paidVia: paidviaController.text,
+        receiptId: "",
+        remarks: remarksController.text,
+        type: type.value);
 
+    print(
+        "Model${model.amount},${model.date},${model.paidBy},${model.paidVia},${model.receiptId},${model.remarks}${model.type}");
+    try {
+      var response =
+          await apiHelper.post(endpoint: 'addExpense/', data: model.toJson());
 
+      if (response.statusCode == 200) {
+        print(response.data);
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.badResponse) {
+        // Alert.appToast("Incorect pasword or email", isError: true);
+        print(e.toString());
+      } else {
+        print(e.message);
+      }
+    }
+  }
 
   void increment() => count.value++;
 }

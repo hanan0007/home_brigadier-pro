@@ -34,6 +34,7 @@ class ApiHelper {
           .post('$BASEURL$endpoint',
               data: data,
               options: Options(
+                // validateStatus: (status) => true,
                 headers: {'Authorization': 'Bearer ${StaticData.accessToken}'},
               ),
               cancelToken: _cancelToken)
